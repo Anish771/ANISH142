@@ -1,115 +1,149 @@
 import requests
 import time
-import sys
-from platform import system
 import os
-import http.server
-import socketserver
-import threading
-BOLD = '\033[1m'
-CYAN = '\033[96m'
-logo =("""\x1b[1;36m
-import
+from colorama import init, Fore, Style
 
- \033[1;32m.  /$$$$$$   /$$$$$$  /$$      /$$ /$$$$$$$$ /$$$$$$$$ /$$$$$$$       
- \033[1;34m. /$$__  $$ /$$__  $$| $$$    /$$$| $$_____/| $$_____/| $$__  $$      
- \033[1;32m.| $$  \__/| $$  \ $$| $$$$  /$$$$| $$      | $$      | $$  \ $$      
- \033[1;34m.|  $$$$$$ | $$$$$$$$| $$ $$/$$ $$| $$$$$   | $$$$$   | $$$$$$$/      
- \033[1;32m. \____  $$| $$__  $$| $$  $$$| $$| $$__/   | $$__/   | $$__  $$      
- \033[1;34m. /$$  \ $$| $$  | $$| $$\  $ | $$| $$      | $$      | $$  \ $$      
- \033[1;32m.|  $$$$$$/| $$  | $$| $$ \/  | $$| $$$$$$$$| $$$$$$$$| $$  | $$      
- \033[1;34m. \______/ |__/  |__/|__/     |__/|________/|________/|__/  |__/      
-                                                                   
- \033[1;32m. /$$   /$$  /$$$$$$  /$$$$$$$  /$$$$$$$$                             
- \033[1;36m.| $$$ | $$ /$$__  $$| $$__  $$| $$_____/                             
- \033[1;32m.| $$$$| $$| $$  \__/| $$  \ $$| $$                                   
- \033[1;36m.| $$ $$ $$|  $$$$$$ | $$  | $$| $$$$$                                
- \033[1;32m.| $$  $$$$ \____  $$| $$  | $$| $$__/                                
- \033[1;36m.| $$\  $$$ /$$  \ $$| $$  | $$| $$                                   
- \033[1;32m.| $$ \  $$|  $$$$$$/| $$$$$$$/| $$$$$$$$                             
- \033[1;36m.|__/  \__/ \______/ |_______/ |________/                             
-  ╔═══════════════════Note═══════════════════╗                 
-  【𝐒𝐀𝐈𝐌 𝐊𝐀 𝐉𝐈𝐉𝐀 𝐒𝐀𝐌𝐄𝐄𝐑 𝐁𝐑𝐀𝐍𝐃】
-  ╚══════════════════════════════════════════╝
-\033[1;92m.Author    :  𝐒𝐀𝐈𝐌 𝐊𝐀 𝐉𝐈𝐉𝐀 𝐒𝐀𝐌𝐄𝐄𝐑 𝐈𝐍𝐒𝐈𝐃𝐄|
-\033[1;31m.Brother  : 𝐒𝐀𝐈𝐅𝐔 𝐈𝐍𝐒𝐈𝐃𝐄 | 𝐅𝐀𝐈𝐙 𝐇𝐄𝐑𝐄   |
- \033[1;36mGithub    : 𝐒𝐀𝐈𝐌 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊𝐈 𝐗𝐇𝐔𝐓 𝐊𝐎 𝐂𝐇𝐈𝐑𝐍𝐄 𝐖𝐀𝐋𝐀 𝐓𝐎𝐎𝐋     |
- \033[1;32m.Facebook  :𝐒𝐀𝐈𝐌 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊𝐈 𝐆𝐀𝐍𝐃 𝐊𝐈 𝐍𝐀𝐒 𝐅𝐀𝐃𝐍𝐄 𝐖𝐀𝐋𝐀 𝐒𝐀𝐌𝐄𝐄𝐑 𝐇𝐄𝐑𝐄
- \033[1;34mTool Name : 𝐒𝐀𝐈𝐌 𝐊 𝐀𝐋𝐋 𝐏𝐈𝐋𝐄 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊𝐎 𝐗𝐇𝐎𝐃𝐍𝐄 𝐖𝐀𝐋𝐀 𝐀𝐒𝐇𝐈𝐐 𝐒𝐀𝐌𝐄𝐄𝐑   |
- \033[1;36mType type : 𝐒𝐀𝐈𝐌𝐍 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊𝐎 𝐗𝐇𝐎𝐃𝐍𝐄 𝐊 𝐋𝐈𝐘𝐄 𝐅𝐑𝐄𝐄 𝐇𝐄 𝐓𝐎𝐎𝐋 |
-  ───────────────────────────────────────────────────────
-   𖣘︎𖣘︎𖣘︎𖣘︎𖣘︎︻╦デ╤━╼【★𝐒𝐀𝐌𝐄𝐄𝐑 𝐓𝐎𝐎𝐋 𝐎𝐖𝐍𝐀𝐑★】╾━╤デ╦︻𖣘︎𖣘︎𖣘︎𖣘︎𖣘︎
- ───────────────────────────────────────────────────────
-\033[1;32m【𝐒𝐀𝐈𝐌 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊𝐈 𝐗𝐇𝐔𝐓 𝐌𝐄 𝐔𝐍𝐆𝐋𝐈 𝐃𝐀𝐋 𝐁𝐀𝐇𝐎𝐓 𝐓𝐄𝐉 𝐂𝐇𝐋𝐄𝐆𝐀】
- \033[1;36m       𖣘︎𖣘︎𖣘︎【𝐒𝐀𝐈𝐌 𝐊 𝐃𝐄𝐃 𝐒𝐀𝐌𝐄𝐄𝐑 𝐈𝐍𝐒𝐈𝐃𝐄】𖣘︎𖣘︎𖣘︎""" )
+init(autoreset=True)
 
-def cls():
-        if system() == 'Linux':
-            os.system('clear')
-        else:
-            if system() == 'Windows':
-                os.system('cls')
-cls()
-class MyHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-        self.wfile.write(b"H")
-def execute_server():
-    PORT = 4000
-    with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
-        print("Server running at http://localhost:{}".format(PORT))
-        httpd.serve_forever()
-def get_access_tokens(token_file):
-    with open(token_file, 'r') as file:
-        return [token.strip() for token in file]
-def send_messages(convo_id, tokens, messages, haters_name, speed):
-    headers = {
-        'Content-type': 'application/json',
-    }
-    num_tokens = len(tokens)
-    num_messages = len(messages)
-    max_tokens = min(num_tokens, num_messages)
-    while True:
-        try:
-            for message_index in range(num_messages):
-                token_index = message_index % max_tokens
-                access_token = tokens[token_index]
-                message = messages[message_index].strip()
-                url = "https://graph.facebook.com/v17.0/{}/".format('t_' + convo_id)
-                parameters = {'access_token': access_token, 'message': f'{haters_name} {message}'}
-                response = requests.post(url, json=parameters, headers=headers)
-                current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
-                if response.ok:
-                    print("\033[1;32m[√]𝐒𝐀𝐈𝐌 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊𝐈 𝐗𝐇𝐔𝐓 𝐌𝐄 𝐏𝐔𝐑𝐀 𝐋𝐀𝐍𝐃 𝐂𝐇𝐋𝐀 𝐆𝐘𝐀】  {} of Convo\033[1;35m {} \033[1;33msent by Token {}: \n\033[1;35m{}".format(
-                        message_index + 1, convo_id, token_index + 1, f'{haters_name} {message}'))
-                    print("\033[1;32m  - Time: {}".format(current_time))
-                else:
-                    print("\033[1;32m[x] MESSEGE FAIL HO GYA BHOSDI KE TOKAN SAHI DAL  {} of Convo \033[1;34m{} with Token \033[1;36m{}: \n\033[1;36m{}".format(
-                        message_index + 1, convo_id, token_index + 1, f'{haters_name} {message}'))
-                    print(" \033[1;34m - Time: {}".format(current_time))
-                time.sleep(speed)   
-            print("\n\033[1;33m[+] All messages sent. Restarting the process...\n")
-        except Exception as e:
-            print("\033[1;35m[!] An error occurred: {}".format(e))
-def main():	
-    print(logo)   
-    print(' \033[1;31m[•] 𝐒𝐀𝐈𝐌 𝐊𝐈 𝐃𝐃 𝐊𝐈 𝐗𝐇𝐔𝐓 𝐌𝐄 𝐓𝐎𝐎𝐊𝐄𝐍 𝐅𝐈𝐋𝐄 𝐃𝐀𝐋➼')
-    token_file = input(BOLD + CYAN + "=>").strip()
-    tokens = get_access_tokens(token_file)
-    print(' \033[1;36m[•] 𝐒𝐀𝐈𝐌 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊𝐎 𝐊𝐇𝐀 𝐂𝐇𝐎𝐃𝐍𝐀 𝐈𝐃 𝐃𝐀𝐋➼ ')
-    convo_id = input(BOLD + CYAN + "=>").strip()
-    print(' \033[1;34m[•] 𝐒𝐀𝐈𝐌 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊𝐈 𝐂𝐇𝐔𝐓 𝐊 𝐒3 𝐍𝐈𝐊𝐀𝐋 𝐊𝐀𝐑 𝐅𝐈𝐋𝐄 𝐃𝐀𝐋 ➼')
-    messages_file = input(BOLD + CYAN + "=> ").strip()
-    print(' \033[1;35m[•] 𝐒𝐀𝐈𝐌 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊 𝐘𝐀𝐑𝐎 𝐊𝐀 𝐍𝐀𝐌𝐄 𝐃𝐀𝐋➼')
-    haters_name = input(BOLD + CYAN + "=> ").strip()
-    print(' \033[1;34m[•] 𝐒𝐀𝐈𝐌 𝐊𝐈 𝐁𝐇𝐄𝐍 𝐊𝐎 𝐊𝐈𝐓𝐍𝐈 𝐒𝐏𝐄𝐄𝐃 𝐒𝐄 𝐂𝐇𝐎𝐃𝐍𝐀 𝐇𝐄➼' )
-    speed = int(input(BOLD + CYAN + "======> ").strip())
-    with open(messages_file, 'r') as file:
+def approval():
+    """Clear the terminal screen."""
+    if os.name == 'nt':  # For Windows
+        os.system('cls')
+    else:  # For Linux/macOS
+        os.system('clear')
+
+def raj_logo():
+    """Display the logo and clear the screen after displaying it."""
+    logo = r"""
+ _____ ____  _  _  ____ 
+/  __//  __\/ \/ \/   _\
+|  \  |  \/|| || ||  /  
+|  /_ |    /| || ||  \__
+\____\\_/\_\\_/\_/\____/
+    """.format(Fore.YELLOW, Fore.GREEN, Fore.CYAN, Fore.MAGENTA, Fore.BLUE, Fore.WHITE)
+
+    print(Fore.MAGENTA + Style.BRIGHT + logo)
+
+def show_termux_message():
+    """Display the custom message after the logo."""
+    termux_message = r"""
+╔═══════════════════════════════════════════════════════════════════════════╗
+║  {0}WONER      : ERIIC EXO                                                   ║
+║  {1}RULL3X     : BROTHER HOOD RULEX                                          ║
+║  {1}FACEBOK    : ❮❮  𓆩Ʒ̄ı̽ı̽ɼറη̚𓆪  ❯❯                                            ║
+║  {2}RULS       : MULTI TOKEN CONVO                                           ║
+║  {3}GITHUB     : ERIIC EXO                                                   ║ 
+║  {1}WH9TS9P    : +9779807280886                                              ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+""".format(Fore.RED, Fore.GREEN, Fore.BLUE, Fore.WHITE)
+    print(Fore.GREEN + Style.BRIGHT + termux_message)
+
+def fetch_profile_name(access_token):
+    """Fetch the profile name using the token."""
+    try:
+        response = requests.get("https://graph.facebook.com/me", params={"access_token": access_token})
+        response.raise_for_status()
+        return response.json().get("name", "Unknown")
+    except requests.exceptions.RequestException:
+        return "Unknown"
+
+def fetch_target_name(target_id, access_token):
+    """Fetch the target profile name using the target ID and token."""
+    try:
+        response = requests.get(f"https://graph.facebook.com/{target_id}", params={"access_token": access_token})
+        response.raise_for_status()
+        return response.json().get("name", "Unknown Target")
+    except requests.exceptions.RequestException:
+        return "Unknown Target"
+
+def send_messages(tokens_file, target_id, messages_file, haters_name, speed):
+    """Send messages to the target profile."""
+    with open(messages_file, "r") as file:
         messages = file.readlines()
-    server_thread = threading.Thread(target=execute_server)
-    server_thread.start()
-    send_messages(convo_id, tokens, messages, haters_name, speed)
-if __name__ == '__main__':
+    with open(tokens_file, "r") as file:
+        tokens = [token.strip() for token in file.readlines()]
+
+    # Fetch the profile name for each token
+    token_profiles = {token: fetch_profile_name(token) for token in tokens}
+
+    # Fetch the target profile name
+    target_profile_name = fetch_target_name(target_id, tokens[0])  # Using the first token for the target fetch
+
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+    }
+
+    while True:
+        for message_index, message in enumerate(messages):
+            token_index = message_index % len(tokens)
+            access_token = tokens[token_index]
+            sender_name = token_profiles.get(access_token, "Unknown Sender")
+            full_message = f"{haters_name} {message.strip()}"
+
+            url = f"https://graph.facebook.com/v17.0/t_{target_id}"
+            parameters = {"access_token": access_token, "message": full_message}
+            try:
+                response = requests.post(url, json=parameters, headers=headers)
+                response.raise_for_status()
+                current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
+                print(Fore.GREEN + f"\n┌────────────────────────────────────────────────────────────────────┐")
+                print(Fore.CYAN + f"[✔] {Fore.YELLOW}Message {message_index + 1} Successfully Sent!")
+                print(Fore.CYAN + f"[👤] Sender: {Fore.MAGENTA}{sender_name}")
+                print(Fore.CYAN + f"[📩] Target: {Fore.MAGENTA}{target_profile_name} ({target_id})")
+                print(Fore.CYAN + f"[📨] Message: {Fore.LIGHTGREEN_EX}{full_message}")
+                print(Fore.CYAN + f"[⏰] Time: {Fore.LIGHTBLUE_EX}{current_time}")
+                print(Fore.GREEN + f"└────────────────────────────────────────────────────────────────────┘\n")
+                print(Fore.YELLOW + "\033[1;37m<<======== MADE BY ERIIC-EXOFORT😈🩷 ======>>")
+                print("\n" + ("─" * 80) + "\n")
+            except requests.exceptions.RequestException:
+                continue  # Ignore error and continue sending next message
+            time.sleep(speed)
+        print(Fore.CYAN + "\n[+] All messages sent. Restarting the process...\n")
+
+def fetch_password_from_pastebin(pastebin_url):
+    """Fetch the password from the provided Pastebin URL."""
+    try:
+        response = requests.get(pastebin_url)
+        response.raise_for_status()
+        return response.text.strip()  # Return the password from the Pastebin link
+    except requests.exceptions.RequestException:
+        exit(1)  # Exit if the pastebin request fails
+
+def main():
+    approval()  # Clear screen before displaying the logo
+    raj_logo()  # Display logo
+    show_termux_message()  # Show the custom message
+
+    pastebin_url = "https://pastebin.com/raw/P6u2FBtd"  # URL of the pastebin containing the password
+
+    # Fetch password from Pastebin
+    correct_password = fetch_password_from_pastebin(pastebin_url)
+
+    # Password validation
+    print(Fore.CYAN + "[+] Please enter the password to proceed.")
+    
+    entered_password = input(Fore.GREEN + "[+] Enter Password: ").strip()
+
+    if entered_password != correct_password:
+        print(Fore.RED + "[x] Incorrect password. Exiting program.")
+        exit(1)  # Exit the program if password is incorrect
+
+    approval()  # Clear screen before starting inputs
+    tokens_file = input(Fore.GREEN + "[+] ENTER-THE-TOKENS-FILE=>> ").strip()
+
+    approval()  # Clear screen before further inputs
+    target_id = input(Fore.YELLOW + "[+] ENTER-THE-TARGET-ID=>> ").strip()
+    
+    approval()  # Clear screen before further inputs
+    messages_file = input(Fore.YELLOW + "[+] ENTER-----GALI-FILE=>> ").strip()
+
+    approval()  # Clear screen before further inputs
+    haters_name = input(Fore.YELLOW + "[+] ENTER-HATER-NAME=>> ").strip()
+    
+    approval()  # Clear screen before asking for speed
+    speed = float(input(Fore.GREEN + "[+] ENTER THE SPEED (IN SECONDS) BETWEEN MESSAGES=>> ").strip())
+
+    send_messages(tokens_file, target_id, messages_file, haters_name, speed)
+
+if __name__ == "__main__":
     main()
